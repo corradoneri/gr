@@ -1,0 +1,12 @@
+﻿1) How will the gender be described in the input file? 
+	a) F or M
+	b) f or m
+	c) Female or Male
+	d) female or male
+	e) other
+
+2) Should the system support input files with a combination of formats? 
+
+3) Should the system trim leading or trailing spaces for individual fields?
+
+4) Should the system handle missing values for all or any of the fields, i.e., should any of the fields be nullable?
