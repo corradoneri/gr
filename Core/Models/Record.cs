@@ -8,6 +8,6 @@ namespace GR.Records.Core.Models
         public string FirstName { get; set; }
         public Gender Gender { get; set; }
         public string FavoriteColor { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime BirthDate { get; set; }
     }
 }

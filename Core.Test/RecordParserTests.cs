@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using GR.Records.Core.Models;
 using GR.Records.Core.Parser;
+using System.Linq;
 
 namespace GR.Records.Core.Test
 {
@@ -27,7 +28,7 @@ namespace GR.Records.Core.Test
             Assert.AreEqual(record.FirstName, "Jane");
             Assert.AreEqual(record.Gender, Gender.Female);
             Assert.AreEqual(record.FavoriteColor, "Blue");
-            Assert.AreEqual(record.DateOfBirth, new DateTime(2002, 2, 12));
+            Assert.AreEqual(record.BirthDate, new DateTime(2002, 2, 12));
         }
 
         [TestMethod]
@@ -48,7 +49,7 @@ namespace GR.Records.Core.Test
             Assert.AreEqual(record.FirstName, "Jane");
             Assert.AreEqual(record.Gender, Gender.Female);
             Assert.AreEqual(record.FavoriteColor, "Blue");
-            Assert.AreEqual(record.DateOfBirth, new DateTime(2002, 2, 12));
+            Assert.AreEqual(record.BirthDate, new DateTime(2002, 2, 12));
         }
 
         [TestMethod]
@@ -69,14 +70,13 @@ namespace GR.Records.Core.Test
             Assert.AreEqual(record.FirstName, "Jane");
             Assert.AreEqual(record.Gender, Gender.Female);
             Assert.AreEqual(record.FavoriteColor, "Blue");
-            Assert.AreEqual(record.DateOfBirth, new DateTime(2002, 2, 12));
+            Assert.AreEqual(record.BirthDate, new DateTime(2002, 2, 12));
         }
 
         [TestMethod]
         public void ParseRecord_MalePipe_Valid()
         {
             var data = "Doe|John|Male|Blue|2001-01-11";
-            var separator = '|';
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
 
@@ -91,7 +91,7 @@ namespace GR.Records.Core.Test
             Assert.AreEqual(record.FirstName, "John");
             Assert.AreEqual(record.Gender, Gender.Male);
             Assert.AreEqual(record.FavoriteColor, "Blue");
-            Assert.AreEqual(record.DateOfBirth, new DateTime(2001, 1, 11));
+            Assert.AreEqual(record.BirthDate, new DateTime(2001, 1, 11));
         }
 
 
@@ -138,7 +138,7 @@ namespace GR.Records.Core.Test
             var recordParser = new RecordParser();
             var recordList = recordParser.ParseRecordFile(path);
 
-            Assert.AreEqual(recordList.Count, 0);
+            Assert.AreEqual(recordList.Count(), 0);
         }
 
         [TestMethod]
@@ -148,7 +148,7 @@ namespace GR.Records.Core.Test
             var recordParser = new RecordParser();
             var recordList = recordParser.ParseRecordFile(path);
 
-            Assert.AreEqual(recordList.Count, 2);
+            Assert.AreEqual(recordList.Count(), 2);
         }
 
         [TestMethod]
@@ -158,7 +158,7 @@ namespace GR.Records.Core.Test
             var recordParser = new RecordParser();
             var recordList = recordParser.ParseRecordFile(path);
 
-            Assert.AreEqual(recordList.Count, 2);
+            Assert.AreEqual(recordList.Count(), 2);
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace GR.Records.Core.Test
             var recordParser = new RecordParser();
             var recordList = recordParser.ParseRecordFile(path);
 
-            Assert.AreEqual(recordList.Count, 2);
+            Assert.AreEqual(recordList.Count(), 2);
         }
     }
 }

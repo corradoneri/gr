@@ -1,12 +1,15 @@
-﻿using System;
+﻿using GR.Records.Core.Parser;
+using GR.Records.Core.Sorter;
 
-namespace ConsoleApp
+namespace GR.Records.ConsoleApp
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var recordParser = new RecordParser();
+            var recordSorter = new RecordSorter();
+            return new Application(args, recordParser, recordSorter).Run();
         }
     }
 }

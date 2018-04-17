@@ -1,20 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using GR.Records.Core.Models;
 
 namespace GR.Records.Core.Parser
 {
-    public class RecordParser
+    public class RecordParser : IRecordParser
     {
+        // Constants
+        //
         private const int LastNameIndex = 0;
         private const int FirstNameIndex = 1;
         private const int GenderIndex = 2;
         private const int FavoriteColorIndex = 3;
-        private const int DateOfBirthIndex = 4;
+        private const int BirthDateIndex = 4;
         private const int FieldCount = 5;
 
+        // Fields
+        //
         private char[] Delimiters = { ',', '|', ' ' };
 
+        // IRecordParser implementation
+        //
         public Record ParseRecord(string data)
         {
             var delimiter = ExtractDelimiter(data);
@@ -23,10 +30,9 @@ namespace GR.Records.Core.Parser
             return ParseRecord(data, delimiter.Value);
         }
 
-        public RecordList ParseRecordFile(string path)
+        public IEnumerable<Record> ParseRecordFile(string fileName)
         {
-            var streamReader = new StreamReader(path);
-            var recordList = new RecordList();
+            var streamReader = new StreamReader(fileName);
             var line = streamReader.ReadLine();
             var delimiter = ExtractDelimiter(line);
 
@@ -34,23 +40,24 @@ namespace GR.Records.Core.Parser
             //
             // Error handling: abort if no delimiter on first line?
             //
-            if (!delimiter.HasValue)
-                return recordList;
-
-            while (line != null)
+            if (delimiter.HasValue)
             {
-                // To-do
-                // 
-                // Error handling: ignore lines with errors?
-                //
-                var record = ParseRecord(line, delimiter.Value);
-                if (record != null)
-                    recordList.Add(record);
-                line = streamReader.ReadLine();
+                while (line != null)
+                {
+                    // To-do
+                    // 
+                    // Error handling: ignore lines with errors?
+                    //
+                    var record = ParseRecord(line, delimiter.Value);
+                    if (record != null)
+                        yield return record;
+                    line = streamReader.ReadLine();
+                }
             }
-            return recordList;
         }
 
+        // Helper methods
+        //
         private char? ExtractDelimiter(string data)
         {
             if (data == null)
@@ -79,7 +86,7 @@ namespace GR.Records.Core.Parser
                 FirstName = fields[FirstNameIndex],
                 Gender = (Gender)Enum.Parse(typeof(Gender), fields[GenderIndex]),
                 FavoriteColor = fields[FavoriteColorIndex],
-                DateOfBirth = DateTime.Parse(fields[DateOfBirthIndex])
+                BirthDate = DateTime.Parse(fields[BirthDateIndex])
             };
             return record;
         }

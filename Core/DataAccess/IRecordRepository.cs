@@ -1,4 +1,4 @@
-﻿namespace GR.Records.Core
+﻿namespace GR.Records.Core.DataAccess
 {
     public interface IRecordRepository
     {

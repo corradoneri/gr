@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GR.Records.ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-gender Data\\Comma.txt Data\\Pipe.txt Data\\Space.txt"
+    }
+  }
+}
