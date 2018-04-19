@@ -2,6 +2,9 @@
 
 namespace GR.Records.WebApi.ViewModels
 {
+    /// <summary>
+    /// Used to "shape" the data for the WebApi
+    /// </summary>
     public class RecordViewModel
     {
         public string LastName { get; }

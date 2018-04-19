@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using GR.Records.Core.DataAccess;
-using GR.Records.Core.Models;
 using GR.Records.Core.Parser;
 using GR.Records.Core.Sorter;
 using GR.Records.WebApi.ViewModels;
