@@ -8,50 +8,48 @@ namespace GR.Records.Core.Exceptions
     {
         private const int MaxErrorCount = 10;
 
-        private string _fileName;
-        private int _errorCount;
-        private List<string> _errors = new List<string>();
+        private ulong _errorCount;
+        private List<string> _errorMessages = new List<string>();
 
-        public string FileName => _fileName;
-        public int ErrorCount => _errorCount;
-        public IReadOnlyList<string> Errors => _errors.AsReadOnly();
+        public bool HasErrors => _errorCount > 0;
+        public IReadOnlyList<string> ErrorMessages => _errorMessages.AsReadOnly();
 
-        public RecordFileException(string fileName)
+        public string FullMessage
         {
-            _fileName = fileName;
+            get
+            {
+                var stringBuilder = new StringBuilder();
+
+                if (_errorCount == 1)
+                    stringBuilder.AppendLine($"The following issue was found:");
+                else if (_errorCount <= MaxErrorCount)
+                    stringBuilder.AppendLine($"{_errorCount} issue weres found:");
+                else
+                    stringBuilder.AppendLine($"{_errorCount} issues were found. The first {MaxErrorCount} are:");
+
+                stringBuilder.AppendLine();
+
+                foreach (var errorMessage in _errorMessages)
+                    stringBuilder.AppendLine($"\t{errorMessage}");
+
+                return stringBuilder.ToString();
+            }
         }
 
-        public RecordFileException(string fileName, string error)
-        {
-            _fileName = fileName;
-            AddError(error);
-        }
-
-        public RecordFileException AddError(string error)
+        public RecordFileException AddError(string fileName, string message)
         {
             ++_errorCount;
-            if (_errors.Count < MaxErrorCount)
-                _errors.Add(error);
+            if (_errorMessages.Count < MaxErrorCount)
+                _errorMessages.Add($"{fileName}:\t{message}");
             return this;
         }
 
-        public override string ToString()
+        public RecordFileException AddError(string fileName, ulong lineNo, string message)
         {
-            var stringBuilder = new StringBuilder();
-
-            if (_errorCount == 1)
-                stringBuilder.AppendLine($"{_errorCount} issue was found in file {_fileName}:");
-            else if (_errorCount <= MaxErrorCount)
-                stringBuilder.AppendLine($"{_errorCount} issue were found in file {_fileName}:");
-            else
-                stringBuilder.AppendLine($"{_errorCount} issues were found in file {_fileName}. The first {MaxErrorCount} are:");
-
-            stringBuilder.AppendLine();
-
-            foreach (var error in _errors)
-                stringBuilder.AppendLine($"\t{error}");
-
-            return stringBuilder.ToString();
+            ++_errorCount;
+            if (_errorMessages.Count < MaxErrorCount)
+                _errorMessages.Add($"{fileName} at line {lineNo}:\t{message}");
+            return this;
         }
     }
 }

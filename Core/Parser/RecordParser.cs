@@ -12,7 +12,7 @@ namespace GR.Records.Core.Parser
     /// </summary>
     public class RecordParser : IRecordParser
     {
-        // Constants
+        // Constants and statics
         //
         private const int LastNameIndex = 0;
         private const int FirstNameIndex = 1;
@@ -21,9 +21,7 @@ namespace GR.Records.Core.Parser
         private const int BirthDateIndex = 4;
         private const int FieldCount = 5;
 
-        // Fields
-        //
-        private char[] Delimiters = { ',', '|', ' ' };
+        private static char[] Delimiters = { ',', '|', ' ' };
 
         /// <summary>
         /// Attempts to find the delimiter and then parses the one record.
@@ -37,57 +35,46 @@ namespace GR.Records.Core.Parser
         /// </exception>
         public Record ParseRecord(string data)
         {
+            if (string.IsNullOrWhiteSpace(data))
+                return null;
+
             var delimiter = ExtractDelimiter(data);
             if (!delimiter.HasValue)
                 throw new RecordException("Could not find delimiter in record");
-            return ParseRecord(data, delimiter.Value);
+
+            var record = ParseRecord(data, delimiter.Value);
+            if (record == null || !record.IsValid)
+                return null;
+            return record;
         }
 
         /// <summary>
-        /// Parses the entire file.
+        /// Parses all fo the files given in the fileNames array.
         /// </summary>
         /// <param name="fileName">The name of the file to parse.</param>
         /// <returns>
         /// Will return enumerable containing the data.
         /// </returns>
         /// <exception>
-        /// Throws RecordFileError if file is invalid.
+        /// Throws RecordFileError if any files are missing or invalid or if any general error occurs.
         /// </exception>
-        public IEnumerable<Record> ParseRecordFile(string fileName)
+        public IEnumerable<Record> ParseFiles(IEnumerable<string> fileNames)
         {
-            var delimiter = ExtractDelimiterFromFile(fileName);
-            if (!delimiter.HasValue)
-                throw new RecordFileException(fileName, "Could not find delimiter in record file");
-
+            var recordFileException = new RecordFileException();
             var records = new List<Record>();
-            var recordFileError = new RecordFileException(fileName);
-            using (var streamReader = new StreamReader(fileName))
-            {
-                var line = streamReader.ReadLine();
-                var lineNo = 1;
-                while (line != null)
-                {
-                    var record = ParseRecord(line, delimiter.Value);
-                    if (record == null || !record.IsValid)
-                        recordFileError.AddError($"Line {lineNo}: Invalid record");
-                    else
-                        records.Add(record);
 
-                    line = streamReader.ReadLine();
-                    ++lineNo;
-                }
-            }
+            foreach (var fileName in fileNames)
+                records.AddRange(ParseFile(fileName, recordFileException));
 
-            if (recordFileError.ErrorCount > 0)
-                throw recordFileError;
+            if (recordFileException.HasErrors)
+                throw recordFileException;
             return records;
         }
 
         /// <summary>
-        /// Attempts to find the delimiter in the data returning the first 
-        /// one it finds
+        /// Attempts to find the delimiter in the data returning the first one it finds
         /// </summary>
-        /// <param name="data">Data that will be searched</param>
+        /// <param name="data">The data that will be searched.</param>
         /// <returns>
         /// If a delimiter is found then it returns it. Otherwise, null is returned.
         /// </returns>
@@ -104,11 +91,31 @@ namespace GR.Records.Core.Parser
         }
 
         /// <summary>
+        /// Checks to see if a file contains nothing but whitespace
+        /// </summary>
+        /// <param name="fileName">The name of the file.</param>
+        /// <returns></returns>
+        private bool IsFileEmpty(string fileName)
+        {
+            using (var streamReader = new StreamReader(fileName))
+            {
+                var line = streamReader.ReadLine();
+                while (line != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                        return false;
+                    line = streamReader.ReadLine();
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Goes through as much of the file as necessary to find the delimiter used in the file. 
         /// In a correctly formatted file it should be in the first line. Assumes no file contains
         /// more than one delimiter - not even in the data.
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="fileName">The name of the file.</param>
         /// <returns>
         /// The delimiter or null if it could not be found.
         /// </returns>
@@ -122,6 +129,7 @@ namespace GR.Records.Core.Parser
                     var delimiter = ExtractDelimiter(line);
                     if (delimiter != null)
                         return delimiter;
+                    line = streamReader.ReadLine();
                 }
             }
             return null;
@@ -141,19 +149,100 @@ namespace GR.Records.Core.Parser
             if (fields.Length != FieldCount)
                 return null;
 
-            // To-do
-            //
-            // Error handling: what to do when missing fields or encounter bad gender or date of birth values
-            //
-            var record = new Record
+            try
             {
-                LastName = fields[LastNameIndex],
-                FirstName = fields[FirstNameIndex],
-                Gender = string.IsNullOrWhiteSpace(fields[GenderIndex]) ? Gender.Unknown : (Gender)Enum.Parse(typeof(Gender), fields[GenderIndex]),
-                FavoriteColor = fields[FavoriteColorIndex],
-                BirthDate = string.IsNullOrWhiteSpace(fields[BirthDateIndex]) ? (DateTime?)null : DateTime.Parse(fields[BirthDateIndex])
-            };
-            return record;
+                var record = new Record
+                {
+                    LastName = fields[LastNameIndex],
+                    FirstName = fields[FirstNameIndex],
+                    Gender = string.IsNullOrWhiteSpace(fields[GenderIndex]) ? Gender.Unknown : (Gender)Enum.Parse(typeof(Gender), fields[GenderIndex], true),
+                    FavoriteColor = fields[FavoriteColorIndex],
+                    BirthDate = string.IsNullOrWhiteSpace(fields[BirthDateIndex]) ? (DateTime?)null : DateTime.Parse(fields[BirthDateIndex])
+                };
+                return record;
+            }
+            catch (Exception)
+            {
+                // Ignoring specifics of error for now and just returning an empty 
+                // record indicating that an error occurred
+                //
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Parses the entire file.
+        /// </summary>
+        /// <param name="fileName">The name of the file to parse.</param>
+        /// <returns>
+        /// Will return enumerable containing the data.
+        /// </returns>
+        /// <exception>
+        /// Throws RecordFileError if file is missing or invalid or if any general error occurs.
+        /// </exception>
+        public IEnumerable<Record> ParseFile(string fileName, RecordFileException recordFileException)
+        {
+            var records = new List<Record>();
+
+            // If file doesn't exist record an error and return right away
+            //
+            if (!File.Exists(fileName))
+            {
+                recordFileException.AddError(fileName, "File not found");
+                return records;
+            }
+
+            // Do not attempt to parse empty files
+            //
+            if (IsFileEmpty(fileName))
+                return records;
+
+            try
+            {
+                // Try to determine the delimiter used in the file by inspecting the file for each
+                // possible delimiter until one is found. 
+                //
+                // Asumption is that the first delimiter found is used through the entire file. 
+                //
+                var delimiter = ExtractDelimiterFromFile(fileName);
+                if (!delimiter.HasValue)
+                {
+                    recordFileException.AddError(fileName, "Could not find a valid delimiter");
+                    return records;
+                }
+
+                // Open file and parse each line recording errors along the way
+                //
+                using (var streamReader = new StreamReader(fileName))
+                {
+                    var line = streamReader.ReadLine();
+                    var lineNo = 0UL;
+                    while (line != null)
+                    {
+                        // Ignoring empty lines
+                        //
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            line = streamReader.ReadLine();
+                            continue;
+                        }
+
+                        var record = ParseRecord(line, delimiter.Value);
+                        if (record == null || !record.IsValid)
+                            recordFileException.AddError(fileName, lineNo, "Invalid record");
+                        else
+                            records.Add(record);
+
+                        line = streamReader.ReadLine();
+                        ++lineNo;
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                recordFileException.AddError(fileName, exception.Message);
+            }
+            return records;
         }
     }
 }

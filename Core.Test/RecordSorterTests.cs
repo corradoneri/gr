@@ -86,5 +86,16 @@ namespace GR.Records.Core.Test
             Assert.AreEqual(sortedRecords[1].LastName, "Murphy");
             Assert.AreEqual(sortedRecords[2].LastName, "Doe");
         }
+
+        [TestMethod]
+        public void SortRecords_NoData()
+        {
+            var recordSorter = new RecordSorter();
+            var emptyList = new List<Record>();
+            var sortedRecords = recordSorter.SortRecords(emptyList, SortCriteria.GenderAscLastNameAsc).ToList<Record>();
+
+            // Checking to make sure exception is not thrown and that sorted list is empty
+            Assert.IsTrue(sortedRecords.Count == 0);
+        }
     }
 }

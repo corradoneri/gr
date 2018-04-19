@@ -6,6 +6,6 @@ namespace GR.Records.Core.Parser
     public interface IRecordParser
     {
         Record ParseRecord(string data);
-        IEnumerable<Record> ParseRecordFile(string fileName);
+        IEnumerable<Record> ParseFiles(IEnumerable<string> fileNames);
     }
 }

@@ -48,14 +48,27 @@ namespace GR.Records.ConsoleApp
         /// </returns>
         public int Run()
         {
-            if (!CheckArgs())
+            try
             {
-                PrintUsage();
-                return -1;
+                if (!CheckArgs())
+                {
+                    PrintUsage();
+                    return -1;
+                }
+                ProcessFiles();
+                return 0;
             }
-            ProcessFile();
-            Console.ReadKey();
-            return 0;
+            catch (RecordFileException fileRecorddException)
+            {
+                Console.WriteLine();
+                Console.WriteLine(fileRecorddException.FullMessage);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"An unknown error occured: {exception.Message}");
+            }
+            return -1;
         }
 
         /// <summary>
@@ -123,31 +136,11 @@ namespace GR.Records.ConsoleApp
         /// <summary>
         /// Loops through all data from files, sorts them and prints them to the console.
         /// </summary>
-        private void ProcessFile()
+        private void ProcessFiles()
         {
-            var errorsFound = false;
-            var allRecords = new List<Record>();
-            foreach (var fileName in _fileNames)
-            {
-                try
-                {
-                    var fileRecords = _recordParser.ParseRecordFile(fileName);
-                    if (!errorsFound)
-                        allRecords.AddRange(fileRecords);
-                }
-                catch (RecordFileException rfe)
-                {
-                    errorsFound = true;
-                    Console.WriteLine();
-                    Console.WriteLine(rfe.ToString());
-                }
-            }
-
-            if (!errorsFound)
-            {
-                foreach (var record in _recordSorter.SortRecords(allRecords, _sortCriteria))
-                    Console.WriteLine($"{record.LastName}, {record.FirstName}, {record.Gender}, {record.FavoriteColor}, {record.BirthDate:M/d/yyy}");
-            }
+            var records = _recordParser.ParseFiles(_fileNames);
+            foreach (var record in _recordSorter.SortRecords(records, _sortCriteria))
+                Console.WriteLine($"{record.LastName}, {record.FirstName}, {record.Gender}, {record.FavoriteColor}, {record.BirthDate:M/d/yyy}");
         }
     }
 }
