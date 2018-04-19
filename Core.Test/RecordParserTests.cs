@@ -100,23 +100,21 @@ namespace GR.Records.Core.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_NoData()
         {
             var data = "";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_OnlyWhiteSpace()
         {
             var data = "   ";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
@@ -131,43 +129,39 @@ namespace GR.Records.Core.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_MissingData_Pipe()
         {
             var data = "Doe|John|Male|Blue";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_TooManyFields_Pipe()
         {
             var data = "Doe|John|Male|Blue|2001-01-01|Programmer";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_MissingFirstName()
         {
             var data = "Doe||Male|Blue|2001-01-01";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_MissingLastName()
         {
             var data = "|John|Male|Blue|2001-01-01";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
@@ -191,13 +185,12 @@ namespace GR.Records.Core.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_BadGender()
         {
             var data = "Doe|John|Mail|Blue|2001-01-01";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         [TestMethod]
@@ -221,13 +214,12 @@ namespace GR.Records.Core.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(RecordException))]
         public void ParseRecord_BadBirthDate()
         {
             var data = "Doe|John|Male|Blue|2001-a1-01";
             var recordParser = new RecordParser();
             var record = recordParser.ParseRecord(data);
-
-            Assert.IsNull(record);
         }
 
         // *********************************************

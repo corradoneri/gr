@@ -36,15 +36,22 @@ namespace GR.Records.Core.Parser
         public Record ParseRecord(string data)
         {
             if (string.IsNullOrWhiteSpace(data))
-                return null;
+                throw new RecordException("No data");
 
             var delimiter = ExtractDelimiter(data);
             if (!delimiter.HasValue)
                 throw new RecordException("Could not find delimiter in record");
 
             var record = ParseRecord(data, delimiter.Value);
-            if (record == null || !record.IsValid)
-                return null;
+            if (record == null)
+                throw new RecordException("Could not parse record");
+
+            if (string.IsNullOrWhiteSpace(record.LastName))
+                throw new RecordException("LastName is required");
+
+            if (string.IsNullOrWhiteSpace(record.FirstName))
+                throw new RecordException("FirstName is required");
+
             return record;
         }
 
@@ -161,8 +168,9 @@ namespace GR.Records.Core.Parser
                 };
                 return record;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                var foo = exception.Message;
                 // Ignoring specifics of error for now and just returning an empty 
                 // record indicating that an error occurred
                 //

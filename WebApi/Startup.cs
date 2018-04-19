@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GR.Records.Core.DataAccess;
+using GR.Records.Core.Parser;
+using GR.Records.Core.Sorter;
+using GR.Records.WebApi.Formatters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +27,13 @@ namespace WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.InputFormatters.Add(new TextPlainInputFormatter());
+            });
+            services.AddSingleton<IRecordParser, RecordParser>();
+            services.AddSingleton<IRecordSorter, RecordSorter>();
+            services.AddSingleton<IRecordRepository, RecordRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

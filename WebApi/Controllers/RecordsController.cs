@@ -1,4 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using GR.Records.Core.DataAccess;
+using GR.Records.Core.Models;
+using GR.Records.Core.Parser;
+using GR.Records.Core.Sorter;
+using GR.Records.WebApi.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GR.Records.WebApi.Controllers
@@ -7,27 +14,48 @@ namespace GR.Records.WebApi.Controllers
     [Route("records")]
     public class RecordsController : Controller
     {
-        [HttpGet("gender")]
-        public IEnumerable<string> GetSortedByGender()
+        private IRecordParser _recordParser;
+        private IRecordRepository _recordRepository;
+
+        public RecordsController(IRecordParser recordParser, IRecordRepository recordRepository)
         {
-            return new string[] { "1", "2", "3" };
+            _recordParser = recordParser;
+            _recordRepository = recordRepository;
+        }
+
+        // Note - would use async/await pattern if there was a database
+        //
+        [HttpGet("gender")]
+        public IEnumerable<RecordViewModel> GetGender()
+        {
+            return _recordRepository.GetRecords(SortCriteria.GenderAscLastNameAsc).Select(Record => new RecordViewModel(Record));
         }
 
         [HttpGet("birthdate")]
-        public IEnumerable<string> GetSortedByBirthDate()
+        public IEnumerable<RecordViewModel> GetBirthDate()
         {
-            return new string[] { "2", "3", "1" };
+            return _recordRepository.GetRecords(SortCriteria.BirthDateAsc).Select(Record => new RecordViewModel(Record));
         }
 
         [HttpGet("name")]
-        public IEnumerable<string> GetSortedByName()
+        public IEnumerable<RecordViewModel> GetName()
         {
-            return new string[] { "3", "1", "2" };
+            return _recordRepository.GetRecords(SortCriteria.LastNameDesc).Select(Record => new RecordViewModel(Record));
         }
 
         [HttpPost]
-        public void Post([FromBody]string value)
+        public IActionResult Post([FromBody]string value)
         {
+            try
+            {
+                var record = _recordParser.ParseRecord(value);
+                _recordRepository.AddRecord(record);
+                return Created("GetSortedByGenderAscLastNameAsc", new RecordViewModel(record));
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(exception.Message);
+            }
         }
     }
 }
