@@ -19,3 +19,4 @@ Notes
 - Can optionally pass -1, -2 or -3 as last parameter to sort by one of the three criteria
 - WebAPI can be run in debugger for simplicity
 - Test cases use MS Test
+- Content-Type for post command for WebApi should be set to text/plain
