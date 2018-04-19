@@ -1,1 +1,5 @@
 ﻿1) All data can fit in memory.
+2) All fields but lastname and firstname are nullable.
+3) Assumes that a given file uses only one of the delimiters throughout the file.
+4) Assumes that a file will not contain any of the delimiters in the data.
+5) 
