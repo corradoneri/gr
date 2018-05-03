@@ -21,8 +21,8 @@ namespace GR.Records.ConsoleApp
         // Fields
         //
         private readonly string[] _args;
-        private readonly RecordParser _recordParser;
-        private readonly RecordSorter _recordSorter;
+        private readonly IRecordParser _recordParser;
+        private readonly IRecordSorter _recordSorter;
         private SortCriteria _sortCriteria = SortCriteria.GenderAscLastNameAsc;
         private readonly string[] _fileNames = new string[FileCount];
 
@@ -32,7 +32,11 @@ namespace GR.Records.ConsoleApp
         /// <param name="args">Arguments to the program containing three filenames and optional sort criteria</param>
         /// <param name="recordParser">Service that is used to parse data in files</param>
         /// <param name="recordSorter">Service that is used to sort data</param>
-        public Application(string[] args, RecordParser recordParser, RecordSorter recordSorter)
+        /// 
+        /// Modified after submission to use interface types as arguments - accidently used concrete types originally
+        /// (same for related fields)
+        ///
+        public Application(string[] args, IRecordParser recordParser, IRecordSorter recordSorter)
         {
             _args = args;
             _recordParser = recordParser;
